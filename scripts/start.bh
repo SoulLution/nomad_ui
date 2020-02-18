@@ -1,0 +1,44 @@
+cd ./../src/
+
+file=$(find ./ -maxdepth 1 -name "index.js");
+
+if [[ $file ]]; then
+	findStr=$(grep -i "import main from './main.vue';" $file);
+
+
+	if [[ $findStr ]]; then
+		for components in ./../src/components/*
+		do
+			findStr=$(grep -i 'import main from "./main.vue";' $file);
+			filename=$(basename -- "$components");
+			componentname="${filename%.*}";
+			IFS='-'
+			read -ra ADDR <<< "$componentname"
+			componentname=''
+			for i in "${ADDR[@]}"; do
+				componentname+="${i^}"
+			done
+			str="import ";
+			str+=$componentname;
+			str+=" from './components/";
+			str+=$filename;
+			str+="';\nimport main from './main.vue';";
+			sed -i.backup.js "s+import main from './main.vue';+${str}+g" "index.js"
+
+			findStr=$(grep -i 'install(Vue, options) {' $file);
+			str="install(Vue, options) {\n\t\t";
+			str+="Vue.component('V$componentname', ";
+			str+=$componentname;
+			str+=")";
+			sed -i "s/install(Vue, options) {/${str}/g" "index.js"
+
+		done
+	else
+		echo "can_t insert components?, check index.js for a line - import main from './main.vue'; ";
+	fi
+else
+	echo "can't find index.js in ./../src/";
+fi
+
+echo "ending generation Vue components is successful!";
+echo "-----------------------------------------------";

@@ -1,0 +1,16 @@
+cd ./../src/
+
+file=$(find ./ -maxdepth 1 -name "index.js");
+file_backup=$(find ./ -maxdepth 1 -name "index.js.backup.js");
+
+if [[ $file ]]; then
+	if [[ $file_backup ]]; then
+		rm -rf "index.js"
+		mv "index.js.backup.js" "index.js"
+	else
+		echo "can't find index.js.backup.js";
+		echo "for get this file run start.bash";
+	fi
+else
+	echo "can't find index.js in ./../src/";
+fi

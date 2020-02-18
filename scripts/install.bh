@@ -1,0 +1,68 @@
+cd ./../../../
+file=$(find ./ -maxdepth 1 -name "nuxt.config.js");
+if [[ $file ]]; then
+	findStr=$(grep -i "'new_nomad_ui'" $file);
+	if [[ ! $findStr ]]; then
+		findStr=$(grep -cF "\t\tmodules: [" $file);
+		if [[ $findStr ]]; then
+			str="\n\t\t['new_nomad_ui',{"
+			# str+="\n\t\t\tVue,"
+			str+="\n\t\t\tthemes: \["
+			str+="\n\t\t\t\t\["
+			str+="\n\t\t\t\t\t{"
+			str+="\n\t\t\t\t\t\t// color: '#000000'"
+			str+="\n\t\t\t\t\t\t// gradient: \[{color: #000000, position: 0},{color: #ffffff, position: 100}]"
+			str+="\n\t\t\t\t\t},"
+			str+="\n\t\t\t\t\t0,//hours when theme has been started"
+			str+="\n\t\t\t\t\t24//hours when theme has been ended"
+			str+="\n\t\t\t\t],"
+			str+="\n\t\t\t],"
+			str+="\n\t\t\trouter"
+			str+="\n\t\t\t}\n\t\t],\n"
+			sed -i "s+modules: \[+modules: \[${str}+g" "nuxt.config.js"
+
+		else
+			echo "can't working with ./nuxt.config.js";
+		fi
+		findStr=$(grep -i "import Vue from 'vue'" $file);
+		if [[ ! $findStr ]]; then
+			findStr=$(grep -i "export default {" $file);
+			if [[ $findStr ]]; then
+				str="import Vue from 'vue'"
+				str+="\nimport router from 'router'"
+				sed -i "s+export default {+${str}\n\nexport default {+g" "nuxt.config.js"
+			else
+				echo "can't working with ./nuxt.config.js";
+			fi
+		fi
+	fi
+
+
+else
+	cd src
+	file=$(find ./ -maxdepth 1 -name "main.js");
+	if [[ $file ]]; then
+		findStr=$(grep -i "import new_ui from 'new_nomad_ui'" $file);
+		if [[ !$findStr ]]; then
+			findStr=$(grep -i "import router from './router'" $file);
+			if [[ $findStr ]]; then
+				str="\n\nimport new_ui from 'new_nomad_ui';\nvar themes = [\n\t[\n\t\t{\n\t\t\t// color: '#000000'\n\t\t\t// gradient: [{color: #000000, position: 0},{color: #ffffff, position: 100}]\n\t\t},\n\t\t0//hours when theme has been started,\n\t\t24//hours when theme has been ended\n\t],\n]\nVue.use(new_ui,{router, themes});\n"
+
+				sed -i "s+import router from './router'+import router from './router'${str}+g" "main.js"
+
+			else
+				echo "can't working with ./src/main.js";
+			fi
+		fi
+
+
+	else
+		echo "can't find Vue file for import if You use vue-cli check file ./src/main.js";
+		echo "OR";
+		echo "if You use Nuxt.js ./nuxt.config.js";
+		echo "Good Luck!!!";
+	fi
+
+fi
+
+echo "-----------------------------------------------";
